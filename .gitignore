@@ -9,6 +9,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+POCADLSFileUpload/myenv/
 develop-eggs/
 dist/
 downloads/
