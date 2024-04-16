@@ -56,11 +56,18 @@ def put_block_list_api_call(url, block_list, filename, key):
         print(f"Error sending remaining chunk: {response.status}")
         print(response.text)
 
+def complete_file_upload(file_path, filename, key):
+     url = "https://apimtestprocedure.azure-api.net/echo/uploadLarge"
+     with open(file_path, "rb") as f:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            response = loop.run_until_complete(put_request(url=url, headers=headers, chunk_data=chunk))
 
 # Open the file in binary mode
 def file_upload(file_path, filename, key):
-    url = "https://apimtestprocedure.azure-api.net/echo/uploadChunk"
-    putBlockListurl = "https://apimtestprocedure.azure-api.net/echo/putBlockList"
+    # url = "https://apimtestprocedure.azure-api.net/echo/uploadChunk"
+    url = "https://apimtestprocedure.azure-api.net/echo/uploadLarge"
+    # putBlockListurl = "https://apimtestprocedure.azure-api.net/echo/putBlockList"
     start_time = time.time()
     print(f"Start Time ============= {start_time}")
     with open(file_path, "rb") as f:
@@ -103,7 +110,7 @@ def file_upload(file_path, filename, key):
         #         print(f"Error sending chunk {i}: {response.text}")
         # blk_id_temp = str(uuid.uuid4())
         # block_list.append(BlobBlock(block_id=blk_id_temp))
-        put_block_list_api_call(putBlockListurl, block_list, filename, key)
+        # put_block_list_api_call(putBlockListurl, block_list, filename, key)
     end_time = time.time()
     duration = end_time - start_time
     print(f"Upload complete. Time duration: {duration} seconds.")
