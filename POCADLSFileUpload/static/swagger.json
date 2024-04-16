@@ -1,0 +1,44 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "FileUpload Access API",
+        "version": "1.0.0"
+    },
+    "tags": [
+        {
+            "name": "FileUpload",
+            "description": "File upload"
+        }
+    ],
+    "paths": {
+        "/upload": {
+            "post": {
+                "tags": [
+                    "FileUpload"
+                ],
+                "summary": "Upload a File",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "media": {
+                                        "type": "string",
+                                        "format": "base64"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Uploaded successfully"
+                    }
+                }
+            }
+        }
+    }
+}
