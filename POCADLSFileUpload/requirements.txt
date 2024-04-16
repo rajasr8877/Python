@@ -1,0 +1,8 @@
+azure-storage-file-datalake
+azure-identity
+Flask
+Flask-SQLAlchemy
+flask-marshmallow
+marshmallow-sqlalchemy
+flask_swagger_ui
+pyyaml
