@@ -15,12 +15,33 @@
         <base />
         <set-method>PUT</set-method>
         <set-variable name="filename" value="@(context.Request.Headers.GetValueOrDefault("filename", "").Substring(context.Request.Headers.GetValueOrDefault("filename", "").LastIndexOf("/") + 1))" />
-        <set-header name="x-ms-version" exists-action="override">
-            <value>2020-02-10</value>
-        </set-header>
-        <set-header name="Authorization" exists-action="delete" />
-        <set-backend-service base-url="@(string.Format("https://{{storageAccountName}}.blob.core.windows.net/files/{0}?comp=blocklist&{{SASToken}}", context.Variables.GetValueOrDefault("filename")))" />
-        <rewrite-uri template="?" />
+        <choose>
+            <when condition="@{
+                var filename = (string)context.Variables["filename"];
+                var extension = filename.Split('.').LastOrDefault();
+                return new [] {"pdf", "mp4", "txt"}.Contains(extension.ToLower());
+                }">
+                <set-header name="x-ms-version" exists-action="override">
+                    <value>2020-02-10</value>
+                </set-header>
+                <set-header name="Authorization" exists-action="delete" />
+                <set-backend-service base-url="@(string.Format("https://{{storageAccountName}}.blob.core.windows.net/files/{0}?comp=blocklist&{{SASToken}}", context.Variables.GetValueOrDefault("filename")))" />
+                <rewrite-uri template="?" />
+            </when>
+            <otherwise>
+                <return-response>
+                    <set-status code="400" reason="Bad Request" />
+                    <set-body template="liquid">
+                    {
+                        "response" : {
+                           "statusCode": 400,
+                            "message": "Invalid file type. Only 'pdf', 'mp4', and 'txt' are allowed."
+                        }
+                    }
+                    </set-body>
+                </return-response>
+            </otherwise>
+        </choose>
     </inbound>
     <backend>
         <forward-request timeout="600" />
@@ -33,8 +54,10 @@
                     <set-status code="200" reason="Ok" />
                     <set-body template="liquid">
                 {
-                    "statusCode": 200,
-                    "message": "Ok, File uploaded successfully."
+                    "response" : {
+                           "statusCode": 200,
+                            "message": "Ok, File uploaded successfully."
+                        }
                 }</set-body>
                 </return-response>
             </when>

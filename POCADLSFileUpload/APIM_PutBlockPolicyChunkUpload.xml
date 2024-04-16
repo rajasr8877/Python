@@ -2,23 +2,58 @@
     <inbound>
         <base />
         <set-variable name="blockId" value="@(System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(context.Request.Headers.GetValueOrDefault("blockId",""))))" />
-        <set-method>PUT</set-method>
-        <set-header name="x-ms-blob-type" exists-action="override">
-            <value>BlockBlob</value>
-        </set-header>
         <set-variable name="filename" value="@(context.Request.Headers.GetValueOrDefault("filename", "").Substring(context.Request.Headers.GetValueOrDefault("filename", "").LastIndexOf("/") + 1))" />
-        <set-header name="x-ms-version" exists-action="override">
-            <value>2020-02-10</value>
-        </set-header>
-        <set-header name="Authorization" exists-action="delete" />
-        <set-backend-service base-url="@(string.Format("https://{{storageAccountName}}.blob.core.windows.net/files/{0}?comp=block&blockid={1}&{{SASToken}}", context.Variables.GetValueOrDefault("filename"), context.Variables.GetValueOrDefault("blockId")))" />
-        <rewrite-uri template="?" />
+        <set-method>PUT</set-method>
+        <choose>
+            <when condition="@{
+                var filename = (string)context.Variables["filename"];
+                var extension = filename.Split('.').LastOrDefault();
+                return new [] {"pdf", "mp4", "txt"}.Contains(extension.ToLower());
+            }">
+                <set-header name="x-ms-blob-type" exists-action="override">
+                    <value>BlockBlob</value>
+                </set-header>
+                <set-header name="x-ms-version" exists-action="override">
+                    <value>2020-02-10</value>
+                </set-header>
+                <set-header name="Authorization" exists-action="delete" />
+                <set-backend-service base-url="@(string.Format("https://{{storageAccountName}}.blob.core.windows.net/files/{0}?comp=block&blockid={1}&{{SASToken}}", context.Variables.GetValueOrDefault("filename"), context.Variables.GetValueOrDefault("blockId")))" />
+                <rewrite-uri template="?" />
+            </when>
+            <otherwise>
+                <return-response>
+                    <set-status code="400" reason="Bad Request" />
+                    <set-body template="liquid">
+                    {
+                        "response" : {
+                           "statusCode": 400,
+                            "message": "Invalid file type. Only 'pdf', 'mp4', and 'txt' are allowed."
+                        }
+                    }
+                    </set-body>
+                </return-response>
+            </otherwise>
+        </choose>
     </inbound>
     <backend>
         <forward-request timeout="600" />
     </backend>
     <outbound>
         <base />
+        <choose>
+            <when condition="@(context.Response.StatusCode == 201)">
+                <return-response>
+                    <set-status code="200" reason="Ok" />
+                    <set-body template="liquid">
+                {
+                    "response" : {
+                            "statusCode": 200,
+                            "message": "Ok, File Chunk Staged successfully."
+                        }
+                }</set-body>
+                </return-response>
+            </when>
+        </choose>
     </outbound>
     <on-error>
         <base />
