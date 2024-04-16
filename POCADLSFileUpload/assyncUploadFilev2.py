@@ -74,8 +74,6 @@ def file_upload(file_path, filename, key):
         # Get the file size
         file_size = os.path.getsize(file_path)
         print(file_size)
-        # Send the first chunk (100 MB)
-        # chunk_size = 1 * 1024 * 1024
         chunk_size = 4 * 1024 * 1024
         block_list = []
         for i in range(0, file_size, chunk_size):
@@ -93,24 +91,7 @@ def file_upload(file_path, filename, key):
                 break
             block_list.append(BlobBlock(block_id=blk_id))
 
-        # Send the remaining chunk (if any)
         print(f"Print i value {i}: and file_size == {file_size}")
-        # if i < file_size:
-        #     chunk =  f.read(file_size - i)
-        #     # blk_id = str(uuid.uuid4())
-        #     headers: dict = get_header_value(filename=filename, key=key)
-        #     headers.update({"blockId": blk_id})
-        #     headers.update({"Content-Range": f"bytes {i}-{i + chunk_size - 1}/{file_size}"})
-        #     loop = asyncio.new_event_loop()
-        #     asyncio.set_event_loop(loop)
-        #     response = loop.run_until_complete(put_request(url=url, headers=headers, chunk_data=chunk))
-        #     # block_list.append(BlobBlock(block_id=blk_id))
-        #     if response.status != 201:
-        #         print(f"Error sending remaining chunk: {response.status}")
-        #         print(f"Error sending chunk {i}: {response.text}")
-        # blk_id_temp = str(uuid.uuid4())
-        # block_list.append(BlobBlock(block_id=blk_id_temp))
-        # put_block_list_api_call(putBlockListurl, block_list, filename, key)
     end_time = time.time()
     duration = end_time - start_time
     print(f"Upload complete. Time duration: {duration} seconds.")

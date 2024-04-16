@@ -51,10 +51,10 @@ def put_block_list_api_call(url, block_list, filename, key):
     asyncio.set_event_loop(loop)
     # response = loop.run_until_complete(put_request(url, headers=headers, chunk_data=value))
     response = loop.run_until_complete(put_request_res(url, headers=headers, chunk_data=value))
-    print(response)
-    if response.statusCode != 200:
-        print(f"Error sending remaining chunk: {response.status}")
-        print(response.text)
+    if response.response.statusCode != 200:
+        print(f"Error sending remaining chunk: {response.response.statusCode}")
+        print(response)
+        print(response.response.message)
 
 
 # Open the file in binary mode
@@ -77,12 +77,14 @@ def file_upload(file_path, filename, key):
             blk_id = str(uuid.uuid4())
             headers: dict = get_header_value(filename=filename, key=key)
             headers.update({"blockId": blk_id})
-            headers.update({"Content-Range": f"bytes {i}-{i + chunk_size - 1}/{file_size}"})
+            # headers.update({"Content-Range": f"bytes {i}-{i + chunk_size - 1}/{file_size}"})
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            response = loop.run_until_complete(put_request(url=url, headers=headers, chunk_data=chunk))
-            if response.status != 201:
-                print(f"Error sending chunk {i}: {response.text}")
+            # response = loop.run_until_complete(put_request(url=url, headers=headers, chunk_data=chunk))
+            response = loop.run_until_complete(put_request_res(url=url, headers=headers, chunk_data=chunk))
+            if response.response.statusCode != 200:
+                print(response)
+                print(f"Error sending chunk {i}: {response.response.message}")
                 break
             block_list.append(BlobBlock(block_id=blk_id))
 
