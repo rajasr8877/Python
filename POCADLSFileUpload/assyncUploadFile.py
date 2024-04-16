@@ -96,7 +96,10 @@ def file_upload(file_path, filename, key):
 
 
 def main():
-    file_path = "C:\\Raja\\Src\\VSCode-win32-x64-1.87.2.zip"
+    # file_path = "C:\\Raja\\Src\\VSCode-win32-x64-1.87.2.zip" #130 MB file
+    file_path = "C:\\Raja\\Src.zip" #4.25 GB MB file
+    # file_path = "C:\\Raja\\Src\\ppt\\UI mocks predesign.pptx" #8 MB File took 4.15 sec
+    # file_path = "C:\\Raja\\Src\\Anaconda3-2024.02-1-Windows-x86_64_988743.exe" #930 MB File took 296.67 Sec
     filename = os.path.basename(file_path)
     subscripion_key = "f42419223b5d493e9837983665bb6a75"
     file_upload(file_path, filename, subscripion_key)
