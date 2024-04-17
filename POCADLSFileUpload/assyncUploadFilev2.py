@@ -59,6 +59,18 @@ def put_block_list_api_call(url, block_list, filename, key):
         print(f"Error sending remaining chunk: {response.status}")
         print(response.text)
 
+
+def file_upload_without_chunk(file_path, filename, key):
+    url = "https://apimtestprocedure.azure-api.net/echo/uploadFileTest"
+    with open(file_path, "rb") as data:
+        headers: dict = get_header_value(filename=filename, key=key)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        response = loop.run_until_complete(put_request(url=url, headers=headers, chunk_data=data))
+        if response.status != 200:
+            print(f"Error sending chunk : {response.text}")
+
+
 # Open the file in binary mode
 def file_upload(file_path, filename, key):
     # url = "https://apimtestprocedure.azure-api.net/echo/uploadChunk"
@@ -96,11 +108,12 @@ def file_upload(file_path, filename, key):
 def main():
     # file_path = "C:\\Raja\\Src\\VSCode-win32-x64-1.87.2.zip" #130 MB file
     # file_path = "C:\\Raja\\Src.zip" #4.25 GB MB file
-    file_path = "C:\\Raja\\Src\\ppt\\UI mocks predesign.pptx" #8 MB File took 4.15 sec
+    file_path = "C:\\Raja\\Src\\ppt\\MasterTables_Design__.pdf" #8 MB File took 4.15 sec
     # file_path = "C:\\Raja\\Src\\Anaconda3-2024.02-1-Windows-x86_64_988743.exe" #930 MB File took 296.67 Sec
     filename = os.path.basename(file_path)
     subscripion_key = "f42419223b5d493e9837983665bb6a75"
-    file_upload(file_path, filename, subscripion_key)
+    # file_upload(file_path, filename, subscripion_key)
+    file_upload_without_chunk(file_path, filename, subscripion_key)
 
 
 if __name__ == '__main__':

@@ -22,7 +22,7 @@
         </set-header>
         <set-header name="Authorization" exists-action="delete" />
         <authentication-managed-identity resource="https://storage.azure.com/" />
-        <set-backend-service base-url="@(string.Format("https://{{storageAccountName}}.blob.core.windows.net/files/{0}/{1}/{2}/{3}/{4}",context.Variables.GetValueOrDefault("year"),context.Variables.GetValueOrDefault("month"),context.Variables.GetValueOrDefault("day"), context.Variables.GetValueOrDefault("procedureno"),context.Variables.GetValueOrDefault("filename")))" />
+        <set-backend-service base-url="@(string.Format("https://{{storageAccountName}}.blob.core.windows.net/files/{0}/{1}/{2}/{3}/{4}/{5}",context.Variables.GetValueOrDefault("year"),context.Variables.GetValueOrDefault("month"),context.Variables.GetValueOrDefault("day"), context.Variables.GetValueOrDefault("procedureno"),context.Variables.GetValueOrDefault("type"),context.Variables.GetValueOrDefault("filename")))" />
         <rewrite-uri template="?" />
     </inbound>
     <backend>
@@ -30,10 +30,20 @@
     </backend>
     <outbound>
         <base />
-        <set-header name="X-My-Sample" exists-action="override">
-            <value>This is a sample</value>
-        </set-header>
-        <jsonp callback-parameter-name="ProcessResponse" />
+        <choose>
+            <when condition="@(context.Response.StatusCode == 201)">
+                <return-response>
+                    <set-status code="200" reason="Ok" />
+                    <set-body template="liquid">
+                    {
+                        "response" : {
+                           "statusCode": 200,
+                            "message": "Ok, File uploaded successfully."
+                        }
+                    }</set-body>
+                </return-response>
+            </when>
+        </choose>
     </outbound>
     <on-error>
         <base />
