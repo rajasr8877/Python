@@ -1,0 +1,41 @@
+<policies>
+    <inbound>
+        <base />
+        <set-method>PUT</set-method>
+        <set-variable name="filename" value="@(context.Request.Headers.GetValueOrDefault("filename", "default"))" />
+        <set-variable name="fileExtension" value="@{
+                var filename = (string)context.Variables["filename"];
+                var extension = filename.Split('.').LastOrDefault();
+                return extension.ToLower();
+        }" />
+        <set-variable name="dateValue" value="@(context.Request.Headers.GetValueOrDefault("datetime", "01/01/2000"))" />
+        <set-variable name="type" value="@(context.Request.Headers.GetValueOrDefault("type", "default"))" />
+        <set-variable name="procedureno" value="@(context.Request.Headers.GetValueOrDefault("procedureNo", "default"))" />
+        <set-variable name="year" value="@(DateTime.Parse((string)context.Variables["dateValue"]).Year)" />
+        <set-variable name="month" value="@(DateTime.Parse((string)context.Variables["dateValue"]).Month)" />
+        <set-variable name="day" value="@(DateTime.Parse((string)context.Variables["dateValue"]).Day)" />
+        <set-header name="x-ms-blob-type" exists-action="override">
+            <value>BlockBlob</value>
+        </set-header>
+        <set-header name="x-ms-version" exists-action="override">
+            <value>2020-02-10</value>
+        </set-header>
+        <set-header name="Authorization" exists-action="delete" />
+        <authentication-managed-identity resource="https://storage.azure.com/" />
+        <set-backend-service base-url="@(string.Format("https://{{storageAccountName}}.blob.core.windows.net/files/{0}/{1}/{2}/{3}/{4}",context.Variables.GetValueOrDefault("year"),context.Variables.GetValueOrDefault("month"),context.Variables.GetValueOrDefault("day"), context.Variables.GetValueOrDefault("procedureno"),context.Variables.GetValueOrDefault("filename")))" />
+        <rewrite-uri template="?" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <set-header name="X-My-Sample" exists-action="override">
+            <value>This is a sample</value>
+        </set-header>
+        <jsonp callback-parameter-name="ProcessResponse" />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
