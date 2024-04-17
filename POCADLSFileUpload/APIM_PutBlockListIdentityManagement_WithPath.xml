@@ -1,0 +1,81 @@
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <set-method>PUT</set-method>
+        <set-variable name="filename" value="@(context.Request.Headers.GetValueOrDefault("filename", "default"))" />
+        <set-variable name="blockId" value="@(System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(context.Request.Headers.GetValueOrDefault("blockId",""))))" />
+        <set-variable name="fileExtension" value="@{
+                var filename = (string)context.Variables["filename"];
+                var extension = filename.Split('.').LastOrDefault();
+                return extension.ToLower();
+        }" />
+        <choose>
+            <when condition="@{
+                var extension = (string)context.Variables["fileExtension"];
+                return new [] {"pdf", "mp4", "txt"}.Contains(extension.ToLower());
+            }">
+                <set-variable name="dateValue" value="@(context.Request.Headers.GetValueOrDefault("datetime", "01/01/2000"))" />
+                <set-variable name="type" value="@(context.Request.Headers.GetValueOrDefault("type", "default"))" />
+                <set-variable name="procedureno" value="@(context.Request.Headers.GetValueOrDefault("procedureNo", "default"))" />
+                <set-variable name="year" value="@(DateTime.Parse((string)context.Variables["dateValue"]).Year)" />
+                <set-variable name="month" value="@(DateTime.Parse((string)context.Variables["dateValue"]).Month)" />
+                <set-variable name="day" value="@(DateTime.Parse((string)context.Variables["dateValue"]).Day)" />
+                <set-header name="x-ms-version" exists-action="override">
+                    <value>2020-02-10</value>
+                </set-header>
+                <set-header name="Authorization" exists-action="delete" />
+                <authentication-managed-identity resource="https://storage.azure.com/" />
+                <set-backend-service base-url="@(string.Format("https://{{storageAccountName}}.blob.core.windows.net/files/{0}/{1}/{2}/{3}/{4}/{5}?comp=blocklist",context.Variables.GetValueOrDefault("year"),context.Variables.GetValueOrDefault("month"),context.Variables.GetValueOrDefault("day"), context.Variables.GetValueOrDefault("procedureno"),context.Variables.GetValueOrDefault("type"),context.Variables.GetValueOrDefault("filename")))" />
+                <rewrite-uri template="?" />
+            </when>
+            <otherwise>
+                <return-response>
+                    <set-status code="400" reason="Bad Request" />
+                    <set-body template="liquid">
+                    {
+                        "response" : {
+                           "statusCode": 400,
+                            "message": "Invalid file type. Only 'pdf', 'mp4', and 'txt' are allowed."
+                        }
+                    }
+                    </set-body>
+                </return-response>
+            </otherwise>
+        </choose>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <choose>
+            <when condition="@(context.Response.StatusCode == 201)">
+                <return-response>
+                    <set-status code="200" reason="Ok" />
+                    <set-body template="liquid">
+                    {
+                        "response" : {
+                           "statusCode": 200,
+                            "message": "Ok, File uploaded successfully."
+                        }
+                    }</set-body>
+                </return-response>
+            </when>
+        </choose>
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>

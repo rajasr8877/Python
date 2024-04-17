@@ -32,14 +32,14 @@ async def read_large_file(file_path, key:str, filename:str, chunk_size=4194304):
             headers.update({"blockId": blk_id})
             await make_request(chunk,headers)
             block_list.append(BlobBlock(block_id=blk_id))
-        data = await make_blocklist_request(block_list, headers)
+        await make_blocklist_request(block_list, headers)
     end_time = time.time()
     duration = end_time - start_time
     print(f"Upload complete. Time duration: {duration} seconds.")
 
 async def make_request(chunk, headers:dict):
     async with aiohttp.ClientSession() as session:
-        async with session.put('https://apimtestprocedure.azure-api.net/echo/uploadChunk', data=chunk, headers=headers) as response:
+        async with session.put('https://apimtestprocedure.azure-api.net/echo/putBlock', data=chunk, headers=headers) as response:
             body = await response.text()
             data = json.loads(body,  object_hook=lambda d: SimpleNamespace(**d))
             print(data.response.statusCode)
@@ -48,10 +48,9 @@ async def make_blocklist_request(blocklist, headers:dict):
     headers.pop("blockId")
     data = xml_data_of_blocklist(blocklist)
     async with aiohttp.ClientSession() as session:
-        async with session.put('https://apimtestprocedure.azure-api.net/echo/putBlockList', data=data, headers=headers) as response:
+        async with session.put('https://apimtestprocedure.azure-api.net/echo/putBlockListIM', data=data, headers=headers) as response:
             body = await response.text()
-            data = json.loads(body,  object_hook=lambda d: SimpleNamespace(**d))
-            print(data.response.statusCode)
+            print(body)
             return data
 
 
@@ -59,7 +58,7 @@ def get_header_value(key: str, filename: str):
     header_values = dict()
     header_values.update({"Ocp-Apim-Subscription-Key": key})
     header_values.update({"filename": filename})
-    header_values.update({"datetime": "10/09/2018"})
+    header_values.update({"datetime": "10/10/2018"})
     header_values.update({"procedureNo": "1"})
     header_values.update({"type": "Vedios"})
     header_values.update({"Content-Type": "application/octet-stream"})
