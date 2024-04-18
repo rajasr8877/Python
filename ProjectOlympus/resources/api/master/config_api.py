@@ -1,9 +1,8 @@
 from flask.views import MethodView
-from flask_smorest import Blueprint, abort
+from flask_smorest import Blueprint
 
-from schemas.master.config_schema import LaserSourceInformationSchema, MainSchema
-from models.master.laser_source_information import LaserSourceInfoModel
-from models.master.imaging_mode import ImagingModeModel
+from schemas.master.config_schema import MainSchema
+from models.master.master_table_models import LaserSourceInfoModel, ImagingModeModel
 # from sqlalchemy.exc import SQLAlchemyError
 
 # from db import db
