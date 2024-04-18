@@ -8,7 +8,7 @@
             <when condition="@{
                 var filename = (string)context.Variables["filename"];
                 var extension = filename.Split('.').LastOrDefault();
-                return new [] {"pdf", "mp4", "txt"}.Contains(extension.ToLower());
+                return new [] {"pdf", "mp4", "txt","zip","pptx","docx"}.Contains(extension.ToLower());
             }">
                 <set-header name="x-ms-blob-type" exists-action="override">
                     <value>BlockBlob</value>
@@ -17,7 +17,8 @@
                     <value>2020-02-10</value>
                 </set-header>
                 <set-header name="Authorization" exists-action="delete" />
-                <set-backend-service base-url="@(string.Format("https://{{storageAccountName}}.blob.core.windows.net/files/{0}?comp=block&blockid={1}&{{SASToken}}", context.Variables.GetValueOrDefault("filename"), context.Variables.GetValueOrDefault("blockId")))" />
+                <authentication-managed-identity resource="https://storage.azure.com/" />
+                <set-backend-service base-url="@(string.Format("https://{{storageAccountName}}.blob.core.windows.net/files/{0}?comp=block&blockid={1}", context.Variables.GetValueOrDefault("filename"), context.Variables.GetValueOrDefault("blockId")))" />
                 <rewrite-uri template="?" />
             </when>
             <otherwise>
