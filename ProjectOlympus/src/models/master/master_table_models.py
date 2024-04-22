@@ -25,29 +25,62 @@ class LaserSerialNumberModel(BaseModel):
     __tablename__ = "laser_serial_number"
 
 
-class TreatmentLocationModel(BaseModel):
-    __tablename__ = "treatment_location"
+class SpecificModel(BaseModel):
+    __tablename__ = "specific"
+    treatment_types = db.relationship(
+        "TreatmentTypeModel", secondary="treatment_type_specifics"
+    )
 
 
 class TreatmentTypeModel(BaseModel):
     __tablename__ = "treatment_type"
+    specifics = db.relationship(
+        "SpecificModel",
+        secondary="treatment_type_specifics",
+        back_populates="treatment_types",
+        lazy=True,
+    )
+    locations = db.relationship(
+        "TreatmentLocationModel", secondary="treatment_location_types"
+    )
 
 
-class SpecificModel(BaseModel):
-    __tablename__ = "specific"
+class TreatmentLocationModel(BaseModel):
+    __tablename__ = "treatment_location"
+    treatment_types = db.relationship(
+        "TreatmentTypeModel", secondary="treatment_location_types"
+    )
 
 
-class TreatmentLocationTypesModel(BaseColumnModel):
+class TreatmentTypeSpecificModel(BaseColumnModel):
+    __tablename__ = "treatment_type_specifics"
+    treatment_type_id = db.Column(db.Integer, db.ForeignKey("treatment_type.id"))
+    specific_id = db.Column(db.Integer, db.ForeignKey("specific.id"))
+    treatment_types = db.relationship("TreatmentTypeModel")
+    specifics = db.relationship("SpecificModel")
+
+
+class TreatmentTypeLocationModel(BaseColumnModel):
     __tablename__ = "treatment_location_types"
-    isActive = db.Column(db.Boolean, default=True)
-    treatment_location_id = db.Column(db.Integer, db.ForeignKey('treatment_location.id'))
-    treatment_type_id = db.Column(db.Integer, db.ForeignKey('treatment_type.id'))
+    treatment_type_id = db.Column(db.Integer, db.ForeignKey("treatment_type.id"))
+    treatment_location_id = db.Column(
+        db.Integer, db.ForeignKey("treatment_location.id")
+    )
+    treatment_types = db.relationship("TreatmentTypeModel")
+    locations = db.relationship("TreatmentLocationModel")
 
 
-class TreatmentLocationSpecificsModel(BaseColumnModel):
-    __tablename__ = "treatment_location_specifics"
-    specific_id = db.Column(db.Integer, db.ForeignKey('specific.id'))
-    treatment_location_id = db.Column(db.Integer, db.ForeignKey('treatment_location.id'))
+# class TreatmentLocationTypesModel(BaseColumnModel):
+#     __tablename__ = "treatment_location_types"
+#     isActive = db.Column(db.Boolean, default=True)
+#     treatment_location_id = db.Column(db.Integer, db.ForeignKey('treatment_location.id'))
+#     treatment_type_id = db.Column(db.Integer, db.ForeignKey('treatment_type.id'))
+
+
+# class TreatmentLocationSpecificsModel(BaseColumnModel):
+#     __tablename__ = "treatment_location_specifics"
+#     specific_id = db.Column(db.Integer, db.ForeignKey('specific.id'))
+#     treatment_location_id = db.Column(db.Integer, db.ForeignKey('treatment_location.id'))
 
 class FileTypeModel(BaseModel):
     __tablename__ = "file_type"
