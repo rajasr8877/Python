@@ -28,7 +28,7 @@ class LaserSerialNumberModel(BaseModel):
 class SpecificModel(BaseModel):
     __tablename__ = "specific"
     treatment_types = db.relationship(
-        "TreatmentTypeModel", secondary="treatment_type_specifics"
+        "TreatmentTypeModel", secondary="treatment_type_specifics", overlaps="TreatmentTypeModel.specifics"
     )
 
 
@@ -41,14 +41,18 @@ class TreatmentTypeModel(BaseModel):
         lazy=True,
     )
     locations = db.relationship(
-        "TreatmentLocationModel", secondary="treatment_location_types"
+        "TreatmentLocationModel",
+         secondary="treatment_location_types",
+         overlaps="TreatmentTypeModel.locations"
     )
 
 
 class TreatmentLocationModel(BaseModel):
     __tablename__ = "treatment_location"
     treatment_types = db.relationship(
-        "TreatmentTypeModel", secondary="treatment_location_types"
+        "TreatmentTypeModel",
+         secondary="treatment_location_types",
+         overlaps="locations"
     )
 
 
@@ -56,8 +60,8 @@ class TreatmentTypeSpecificModel(BaseColumnModel):
     __tablename__ = "treatment_type_specifics"
     treatment_type_id = db.Column(db.Integer, db.ForeignKey("treatment_type.id"))
     specific_id = db.Column(db.Integer, db.ForeignKey("specific.id"))
-    treatment_types = db.relationship("TreatmentTypeModel")
-    specifics = db.relationship("SpecificModel")
+    treatment_types = db.relationship("TreatmentTypeModel", overlaps="specifics,treatment_types")
+    specifics = db.relationship("SpecificModel", overlaps="specifics,treatment_types")
 
 
 class TreatmentTypeLocationModel(BaseColumnModel):
@@ -66,8 +70,8 @@ class TreatmentTypeLocationModel(BaseColumnModel):
     treatment_location_id = db.Column(
         db.Integer, db.ForeignKey("treatment_location.id")
     )
-    treatment_types = db.relationship("TreatmentTypeModel")
-    locations = db.relationship("TreatmentLocationModel")
+    treatment_types = db.relationship("TreatmentTypeModel",  overlaps="locations,treatment_types")
+    locations = db.relationship("TreatmentLocationModel",  overlaps="locations,treatment_types")
 
 
 # class TreatmentLocationTypesModel(BaseColumnModel):
