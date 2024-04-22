@@ -10,6 +10,7 @@ __pycache__/
 .Python
 build/
 POCADLSFileUpload/myenv/
+ProjectOlympus/myenv/
 develop-eggs/
 dist/
 downloads/

@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_smorest import Api
 from db import db
-from resources.api.master.config_api import blp as MasterConfigBluePrint 
+from src.api.master.config_api import blp as MasterConfigBluePrint 
 def create_app(db_url=None):
     app = Flask(__name__)
     app.config["API_TITLE"] = "Master REST API"
