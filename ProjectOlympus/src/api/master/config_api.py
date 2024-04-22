@@ -16,8 +16,8 @@ class MasterConfigApi(MethodView):
     @blp.response(200, MainSchema())
     def get(self):
         result = dict()
-        laser_source_info = LaserSourceInfoModel.query.all()
-        imaging_mode_info = ImagingModeModel.query.all()
+        laser_source_info = LaserSourceInfoModel.query.filter(LaserSourceInfoModel.isActive).all()
+        imaging_mode_info = ImagingModeModel.query.filter(ImagingModeModel.isActive).all()
         result.update({"ImagingMode": imaging_mode_info})
         result.update({"LaserSourceInformation": laser_source_info})
         return result
