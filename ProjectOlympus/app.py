@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_smorest import Api
 from db import db
-from src.api.master.config_api import blp as MasterConfigBluePrint 
+from src.api.master_config_api import blp as MasterConfigBluePrint 
 def create_app():
     app = Flask(__name__)
     app.config.from_prefixed_env()

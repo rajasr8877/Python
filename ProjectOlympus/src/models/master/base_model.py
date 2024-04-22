@@ -15,3 +15,13 @@ class BaseModel(db.Model):
         onupdate=db.func.current_timestamp()
     )
 
+
+class BaseColumnModel(db.Model):
+    __abstract__ = True
+    id = db.Column(db.Integer, primary_key=True)
+    created_At = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
+    updated_At = db.Column(
+        db.TIMESTAMP,
+        server_default=db.func.current_timestamp(),
+        onupdate=db.func.current_timestamp(),
+    )
